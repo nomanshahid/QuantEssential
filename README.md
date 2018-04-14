@@ -1,1 +1,1 @@
-# MarketGuru
+# QuantEssential
