@@ -1,6 +1,19 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
+def calculate_macd(df):
+	df['12-Day EMA'] = df['Adj Close'].ewm(span=12).mean()
+	df['26-Day EMA'] = df['Adj Close'].ewm(span=26).mean()
+	df['MACD'] = df['12-Day EMA'] - df['26-Day EMA']
+	df['Signal Line'] = df['MACD'].ewm(span=9).mean()
+	
+def plot_macd(df, title="MACD"):
+	plt.figure(3)
+	ax = df[['MACD', "Signal Line"]].plot(title=title)
+	ax.set_xlabel("Date")
+	ax.set_ylabel("MACD")
+
 def calculate_rsi(df):
 	diff = df['Adj Close'].diff()
 	up, down = diff.copy(), diff.copy()
@@ -14,18 +27,18 @@ def calculate_rsi(df):
 	df['RSI'] = 100 - (100/(1+df['Relative Strength']))
 
 def plot_rsi(df, title="RSI"):
-	ax = df['RSI'].plot(title=title)
+	plt.figure(2)
+	ax = df['RSI'].plot(title=title, color="green")
 	ax.set_xlabel("Date")
 	ax.set_ylabel("RSI")
 	plt.axhline(y=30,color='k')
 	plt.axhline(y=70,color='k')
-	plt.show()
 
 def plot_data(df, title="Stock prices"):
-	ax = df['Adj Close'].plot(title=title)
+	plt.figure(1)
+	ax = df['Adj Close'].plot(title=title, label='Adj Close')
 	ax.set_xlabel("Date")
 	ax.set_ylabel("Price")
-	plt.show()
 
 def main():
 	dates = pd.date_range('2017-01-01', '2017-12-31') # only 2017 data testing for now
@@ -33,10 +46,12 @@ def main():
 	dfAAPL = pd.read_csv("data/AAPL.csv",index_col="Date",parse_dates=True, usecols=['Date', 'Adj Close'])
 	df = df.join(dfAAPL)
 	df = df.dropna()
-	print(df.head(20))
 	calculate_rsi(df)
+	calculate_macd(df)
 	plot_data(df, title="Apple Stock Prices 2017 Chart")
 	plot_rsi(df)
+	plot_macd(df)
+	plt.show()
 
 
 if __name__ == "__main__":
